@@ -1,0 +1,105 @@
+from flask import   Flask, jsonify, abort, request
+from flask_cors import CORS
+from MysqlPython import MysqlHelp
+from io import StringIO
+import json
+import pymysql
+import datetime
+import pandas as pd
+app = Flask('test')
+CORS(app)
+
+mysql = MysqlHelp()
+cmde = {'name':'6'}
+
+class nava:     
+	def data(allnav,power):
+		print (allnav)
+		jsonData = []
+		if power=='ptyh':
+			return allnav[0]
+		if power=='zsyh':
+			return allnav[1]
+		else:
+			return allnav[2]	
+			
+		
+		
+		
+
+@app.route('/nav')
+def hello():
+	args = request.args.get("power")
+	
+	sql_select = ("SELECT * FROM Tit_Name")
+	rv = mysql.getAll(sql_select)
+	jsonData = []
+	data = nava.data(rv,args)
+	print(data)
+	return jsonify(data)	
+	
+       
+#	for result in rv:
+#		content = {'id':result[0],'username':result[1],'password': result[2]}
+#
+#		payload.append(content)
+#		content{}
+#	return jsonify(payload)
+
+
+@app.route('/settle')
+def SettData():
+	args = request.args.get("data")
+	return jsonify(args)
+
+	
+@app.route('/session',methods=['POST','GET'])
+def post():
+	recv_data = request.get_json()
+	print(recv_data)
+	username = recv_data['phone']
+	password = recv_data['password']
+
+	
+	sql_select = ("SELECT * FROM student WHERE username='%s' and password='%s'") % (username,password)
+	sql_select_power = ("select power from student where username='%s' and password = '%s' " ) % (username,password)
+	rv = mysql.getAll(sql_select)
+	jsonData=[]
+	for row in rv:
+		result = {}
+		result['power'] = row[5]
+		jsonData.append(result)
+	
+	print(jsonData)
+	if not rv == (): 
+		return jsonify({'code':200,'data':jsonData})
+	else:
+		return jsonify({'code':403})
+	
+	print(rv)
+	return jsonify(rv)
+@app.route('/home')
+def Hello():
+	args = request.args.get("power")
+	sql_select = (" select * from Tit_Name where power='%s' " % args)
+	rv = mysql.getAll(sql_select)
+	print(rv)
+	return jsonify(rv)
+	
+@app.route('/goback/<int:year>')
+def go_back(year):
+	return '<p>Welocome to %d</p>' %(2018 -year)
+
+@app.route('/search/records')
+def records():
+	return "cmd"
+
+@app.route('/search/resource')
+def resource():
+	return "cmds"
+@app.route('/records')
+def records():
+	return "cmdc"	
+
+if __name__ == "__main__":
+	app.run(host="0.0.0.0",port=3652,debug=True)
